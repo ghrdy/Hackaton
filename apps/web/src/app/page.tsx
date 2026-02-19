@@ -192,35 +192,35 @@ export default async function Home({
               <Link
                 key={person.documentId}
                 href={`/alumnus/${person.slug}`}
-                className="group relative flex flex-col rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-[#00AFEF]/30 hover:-translate-y-1 transition-all duration-300"
+                className="group relative flex flex-col rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-[#00AFEF]/30 hover:-translate-y-1 transition-all duration-300"
               >
-                {/* Photo */}
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] bg-slate-100 border border-slate-100">
-                  {person.photo ? (
-                    <Image
-                      src={`${STRAPI_URL}${person.photo.url}`}
-                      alt={`${person.firstName} ${person.lastName}`}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-slate-300 bg-slate-50">
-                      <GraduationCap className="h-20 w-20 opacity-50" />
-                    </div>
-                  )}
+                {/* Profile Header: Avatar + Status */}
+                <div className="flex justify-between items-start mb-6">
+                  <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border-2 border-slate-100 bg-slate-50 shadow-inner group-hover:border-[#00AFEF]/50 transition-colors">
+                    {person.photo ? (
+                      <Image
+                        src={`${STRAPI_URL}${person.photo.url}`}
+                        alt={`${person.firstName} ${person.lastName}`}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-slate-300">
+                        <GraduationCap className="h-10 w-10 opacity-50" />
+                      </div>
+                    )}
+                  </div>
                   {person.promotion && (
-                    <div className="absolute top-3 left-3">
-                      <span className="inline-flex items-center rounded-lg bg-white/90 px-2.5 py-1 text-[10px] font-black text-slate-900 shadow-sm backdrop-blur uppercase tracking-widest border border-slate-100">
-                        Promo {person.promotion.year}
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center rounded-lg bg-slate-50 px-2.5 py-1 text-[10px] font-black text-slate-900 shadow-sm uppercase tracking-widest border border-slate-100">
+                      ' {person.promotion.year.slice(-2)}
+                    </span>
                   )}
                 </div>
 
                 {/* Content */}
-                <div className="p-4 pt-5 flex flex-col flex-1">
+                <div className="flex flex-col flex-1">
                   <div className="mb-4">
-                    <h3 className="text-xl font-black text-slate-900 group-hover:text-[#00AFEF] transition-colors leading-none tracking-tight">
+                    <h3 className="text-xl font-black text-slate-900 group-hover:text-[#00AFEF] transition-colors leading-tight tracking-tight">
                       {person.firstName} <br />
                       <span className="uppercase text-slate-800 group-hover:text-[#00AFEF]">{person.lastName}</span>
                     </h3>
@@ -234,15 +234,8 @@ export default async function Home({
                       </div>
                     )}
                     {person.company && (
-                      <div className="flex items-start gap-2.5">
-                        <Building2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest line-clamp-1">{person.company}</span>
-                      </div>
-                    )}
-                    {person.city && (
-                      <div className="flex items-start gap-2.5">
-                        <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-300" />
-                        <span className="text-[10px] font-bold text-slate-400">{person.city}</span>
+                      <div className="flex items-start gap-2.5 text-neutral-500 uppercase tracking-widest text-[9px] font-black">
+                        {person.company}
                       </div>
                     )}
                   </div>
@@ -253,7 +246,7 @@ export default async function Home({
                         {person.sector.name}
                       </span>
                     ) : <span />}
-                    <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[#00AFEF] group-hover:text-white transition-colors">
+                    <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[#00AFEF] group-hover:text-white transition-all">
                       <ChevronRight className="h-4 w-4" />
                     </div>
                   </div>

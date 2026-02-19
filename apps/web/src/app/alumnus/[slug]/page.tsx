@@ -65,26 +65,25 @@ export default async function AlumnusProfile({ params }: { params: Promise<{ slu
           {/* Left Column: Profile Card */}
           <div className="md:col-span-4 lg:col-span-4">
             <div className="sticky top-28 space-y-6">
-              <div className="rounded-[40px] border border-neutral-100 bg-white p-4 shadow-xl shadow-neutral-200/40">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] bg-neutral-50">
-                  {person.photo ? (
-                    <Image
-                      src={`${STRAPI_URL}${person.photo.url}`}
-                      alt={person.lastName}
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-neutral-100">
-                      <GraduationCap className="h-24 w-24" />
-                    </div>
-                  )}
-                  <div className="absolute top-4 right-4 bg-black/80 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-black text-white uppercase tracking-widest">
-                    Vérifié
+              <div className="rounded-[40px] border border-neutral-100 bg-white p-6 shadow-xl shadow-neutral-200/40">
+                <div className="flex justify-center mb-8">
+                  <div className="relative h-40 w-40 overflow-hidden rounded-full border-4 border-white bg-neutral-50 shadow-lg">
+                    {person.photo ? (
+                      <Image
+                        src={`${STRAPI_URL}${person.photo.url}`}
+                        alt={person.lastName}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-neutral-200">
+                        <GraduationCap className="h-20 w-20" />
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="p-6 text-center">
+                <div className="text-center">
                   <h1 className="text-3xl font-black text-neutral-900 tracking-tight leading-none mb-2">
                     {person.firstName} <br />
                     <span className="uppercase text-[#00AFEF]">{person.lastName}</span>
