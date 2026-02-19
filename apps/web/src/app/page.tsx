@@ -31,9 +31,11 @@ interface StrapiResponse<T> {
 }
 
 // --- Fetchers ---
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
 async function getPromotions(): Promise<Promotion[]> {
   try {
-    const res = await fetch("http://localhost:1337/api/promotions?sort=year:desc");
+    const res = await fetch(`${STRAPI_URL}/api/promotions?sort=year:desc`);
     const json: StrapiResponse<Promotion> = await res.json();
     return json.data || [];
   } catch { return []; }
@@ -41,14 +43,14 @@ async function getPromotions(): Promise<Promotion[]> {
 
 async function getSectors(): Promise<Sector[]> {
   try {
-    const res = await fetch("http://localhost:1337/api/sectors?sort=name:asc");
+    const res = await fetch(`${STRAPI_URL}/api/sectors?sort=name:asc`);
     const json: StrapiResponse<Sector> = await res.json();
     return json.data || [];
   } catch { return []; }
 }
 
 async function getAlumni(search?: string, promoId?: string, sectorId?: string): Promise<Alumnus[]> {
-  let query = "http://localhost:1337/api/alumni?populate[0]=photo&populate[1]=promotion&populate[2]=sector";
+  let query = `${STRAPI_URL}/api/alumni?populate[0]=photo&populate[1]=promotion&populate[2]=sector`;
   if (search) {
     query += `&filters[$or][0][firstName][$containsi]=${search}&filters[$or][1][lastName][$containsi]=${search}&filters[$or][2][company][$containsi]=${search}`;
   }
@@ -196,7 +198,7 @@ export default async function Home({
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] bg-slate-100 border border-slate-100">
                   {person.photo ? (
                     <Image
-                      src={`http://localhost:1337${person.photo.url}`}
+                      src={`${STRAPI_URL}${person.photo.url}`}
                       alt={`${person.firstName} ${person.lastName}`}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-110"

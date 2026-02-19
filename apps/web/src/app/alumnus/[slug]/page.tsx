@@ -17,8 +17,10 @@ interface Alumnus {
   sector?: { name: string };
 }
 
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
 async function getAlumnusBySlug(slug: string): Promise<Alumnus | null> {
-  const query = `http://localhost:1337/api/alumni?filters[slug][$eq]=${slug}&populate[0]=photo&populate[1]=promotion&populate[2]=sector`;
+  const query = `${STRAPI_URL}/api/alumni?filters[slug][$eq]=${slug}&populate[0]=photo&populate[1]=promotion&populate[2]=sector`;
   try {
     const res = await fetch(query, { cache: "no-store" });
     const json = await res.json();
@@ -67,7 +69,7 @@ export default async function AlumnusProfile({ params }: { params: Promise<{ slu
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] bg-neutral-50">
                   {person.photo ? (
                     <Image
-                      src={`http://localhost:1337${person.photo.url}`}
+                      src={`${STRAPI_URL}${person.photo.url}`}
                       alt={person.lastName}
                       fill
                       className="object-cover"
