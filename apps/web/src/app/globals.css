@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f0f4f8; /* Cool gray-blue for depth */
-  --foreground: #0f172a; /* Slate-900 for sharp text */
+  --background: #f0f4f8;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-border: #cbd5e1; /* Slate-300 for visible borders */
-  --primary: #00AFEF; /* MDS Blue */
+  --card-border: #cbd5e1;
+  --primary: #00AFEF;
   --primary-foreground: #ffffff;
 }
 
@@ -16,7 +16,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Utilities for High Contrast */
 .card-shadow {
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
