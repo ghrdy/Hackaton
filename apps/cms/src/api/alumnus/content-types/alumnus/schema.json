@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "alumni",
+  "info": {
+    "singularName": "alumnus",
+    "pluralName": "alumni",
+    "displayName": "Alumnus",
+    "description": "Directory of school alumni"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "firstName": {
+      "type": "string",
+      "required": true
+    },
+    "lastName": {
+      "type": "string",
+      "required": true
+    },
+    "jobTitle": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "linkedinUrl": {
+      "type": "string"
+    },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "lastName"
+    },
+    "scrapedAt": {
+      "type": "datetime"
+    },
+    "promotion": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::promotion.promotion",
+      "inversedBy": "alumni"
+    },
+    "sector": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sector.sector",
+      "inversedBy": "alumni"
+    }
+  }
+}

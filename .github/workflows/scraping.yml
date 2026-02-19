@@ -1,0 +1,36 @@
+name: Alumni Scraper
+
+on:
+  schedule:
+    # Runs every Monday at 8:00 AM UTC
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: scripts/scraping/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: scripts/scraping
+        run: npm ci
+
+      - name: Run Bright Data Scraper
+        working-directory: scripts/scraping
+        env:
+          STRAPI_URL: ${{ secrets.STRAPI_URL }}
+          STRAPI_TOKEN: ${{ secrets.STRAPI_TOKEN }}
+          BRIGHT_DATA_TOKEN: ${{ secrets.BRIGHT_DATA_TOKEN }}
+          BRIGHT_DATA_DATASET_ID: ${{ secrets.BRIGHT_DATA_DATASET_ID }}
+        run: node brightdata_scraper.js

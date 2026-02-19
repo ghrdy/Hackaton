@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "promotions",
+  "info": {
+    "singularName": "promotion",
+    "pluralName": "promotions",
+    "displayName": "Promotion",
+    "description": "Student years (e.g., 2024, 2025)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "year": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "label": {
+      "type": "string",
+      "description": "Optional: e.g. Master's 2024"
+    },
+    "alumni": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::alumnus.alumnus",
+      "mappedBy": "promotion_rel"
+    }
+  }
+}

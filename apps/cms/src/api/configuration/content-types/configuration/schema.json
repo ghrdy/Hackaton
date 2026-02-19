@@ -1,0 +1,29 @@
+{
+  "kind": "singleType",
+  "collectionName": "configurations",
+  "info": {
+    "singularName": "configuration",
+    "pluralName": "configurations",
+    "displayName": "Scraping Configuration",
+    "description": "Control scraping frequency and history"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "frequency": {
+      "type": "enumeration",
+      "enum": [
+        "weekly",
+        "monthly",
+        "quarterly",
+        "semester"
+      ],
+      "default": "monthly",
+      "required": true
+    },
+    "lastRun": {
+      "type": "datetime"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "alumni-scraper",
+  "version": "1.0.0",
+  "description": "LinkedIn scraping script using Bright Data for Alumni Directory",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@brightdata/sdk": "^0.2.0",
+    "axios": "^1.6.0",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.0",
+    "form-data": "^4.0.5"
+  }
+}

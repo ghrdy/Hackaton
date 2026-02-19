@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sectors",
+  "info": {
+    "singularName": "sector",
+    "pluralName": "sectors",
+    "displayName": "Sector",
+    "description": "Industry sectors (e.g., Tech, Finance, Healthcare)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "alumni": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::alumnus.alumnus",
+      "mappedBy": "sector"
+    }
+  }
+}
