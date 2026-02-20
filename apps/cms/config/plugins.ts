@@ -14,16 +14,20 @@ export default ({ env }) => ({
             Bucket: env('R2_BUCKET'),
           },
         },
-        // On le met ici aussi au cas où
         baseUrl: env('R2_PUBLIC_URL'),
       },
-      // Et on le laisse ici
       baseUrl: env('R2_PUBLIC_URL'),
       actionOptions: {
         upload: {},
         uploadStream: {},
         delete: {},
       },
+    },
+  },
+  'import-export-entries': {
+    enabled: true,
+    config: {
+      // See: https://github.com/n677/strapi-plugin-import-export-entries
     },
   },
 });
