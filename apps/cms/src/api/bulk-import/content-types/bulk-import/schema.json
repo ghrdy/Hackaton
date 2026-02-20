@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "bulk_imports",
+  "info": {
+    "singularName": "bulk-import",
+    "pluralName": "bulk-imports",
+    "displayName": "Bulk Import",
+    "description": "Upload a CSV to import alumni"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "csvFile": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["files"]
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "completed", "error"],
+      "default": "pending"
+    },
+    "report": {
+      "type": "text"
+    }
+  }
+}

@@ -24,10 +24,4 @@ export default ({ env }) => ({
       },
     },
   },
-  'import-export-entries': {
-    enabled: true,
-    config: {
-      // See: https://github.com/n677/strapi-plugin-import-export-entries
-    },
-  },
 });
