@@ -15,7 +15,7 @@ export default ({ env }) => ({
           },
         },
       },
-      // Forcer Strapi à utiliser l'URL publique pour les fichiers
+      // C'EST CETTE LIGNE QUI EST CRUCIALE
       baseUrl: env('R2_PUBLIC_URL'),
       actionOptions: {
         upload: {},
