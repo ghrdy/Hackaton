@@ -306,7 +306,7 @@ async function updateLastRun() {
 async function getPendingAlumni() {
   console.log("🔍 Fetching pending alumni from Strapi...");
   try {
-    const res = await axios.get(`${STRAPI_URL}/alumni?filters[status][$eq]=pending&pagination[pageSize]=50`, {
+    const res = await axios.get(`${STRAPI_URL}/alumni?filters[scrapingStatus][$eq]=pending&pagination[pageSize]=50`, {
       headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
     });
     return res.data.data || [];
@@ -320,7 +320,7 @@ async function getPendingAlumni() {
 async function updateAlumnusStatus(documentId, status, data = {}) {
   try {
     await axios.put(`${STRAPI_URL}/alumni/${documentId}`, {
-      data: { status, ...data }
+      data: { scrapingStatus: status, ...data }
     }, {
       headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
     });

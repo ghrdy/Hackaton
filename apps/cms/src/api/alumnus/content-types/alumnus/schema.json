@@ -46,7 +46,7 @@
     "scrapedAt": {
       "type": "datetime"
     },
-    "status": {
+    "scrapingStatus": {
       "type": "enumeration",
       "enum": [
         "pending",

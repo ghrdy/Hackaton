@@ -20,8 +20,13 @@
       "multiple": false,
       "required": true
     },
-    "status": {
-      "type": "string",
+    "importStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "completed",
+        "error"
+      ],
       "default": "pending"
     },
     "report": {
