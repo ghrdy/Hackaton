@@ -9,7 +9,7 @@ ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /opt/
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 ENV PATH /opt/node_modules/.bin:$PATH
 
 WORKDIR /opt/app
