@@ -46,6 +46,16 @@
     "scrapedAt": {
       "type": "datetime"
     },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "processing",
+        "scraped",
+        "error"
+      ],
+      "default": "pending"
+    },
     "promotion": {
       "type": "relation",
       "relation": "manyToOne",
