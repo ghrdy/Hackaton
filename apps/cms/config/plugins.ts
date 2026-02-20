@@ -14,8 +14,10 @@ export default ({ env }) => ({
             Bucket: env('R2_BUCKET'),
           },
         },
+        // On le met ici aussi au cas où
+        baseUrl: env('R2_PUBLIC_URL'),
       },
-      // C'EST CETTE LIGNE QUI EST CRUCIALE
+      // Et on le laisse ici
       baseUrl: env('R2_PUBLIC_URL'),
       actionOptions: {
         upload: {},
