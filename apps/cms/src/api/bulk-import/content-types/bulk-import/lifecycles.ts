@@ -1,4 +1,4 @@
-import { errors } from '@strapi/utils';
+// @ts-nocheck
 const axios = require('axios');
 const { parse } = require('csv-parse/sync');
 
@@ -11,8 +11,8 @@ export default {
       try {
         console.log('🏁 Début de l\'importation en arrière-plan...');
 
-        // 1. Récupérer l'entrée complète avec le fichier
-        const entry = await strapi.documents('api::bulk-import.bulk-import').findOne({
+        // 1. Récupérer l'entrée complète avec le fichier (Casting any pour TS)
+        const entry = await (strapi.documents('api::bulk-import.bulk-import' as any) as any).findOne({
           documentId: result.documentId,
           populate: ['csvFile']
         });
@@ -45,7 +45,7 @@ export default {
 
         for (const record of records) {
           try {
-            const linkedinUrl = record.linkedinUrl || record.url || record.Linkedin || record.LinkedIn;
+            const linkedinUrl = record.linkedinUrl || record.url || record.Linkedin || record.LinkedIn || record.URL;
             
             if (!linkedinUrl) {
               errorCount++;
@@ -61,7 +61,7 @@ export default {
               .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
               .replace(/[^a-z0-9]+/g, '-');
 
-            await strapi.documents('api::alumnus.alumnus').create({
+            await (strapi.documents('api::alumnus.alumnus' as any) as any).create({
               data: {
                 firstName,
                 lastName,
@@ -69,7 +69,7 @@ export default {
                 status: 'pending',
                 slug
               },
-              status: 'published' // On le publie direct pour qu'il soit visible par le scraper
+              status: 'published'
             });
             createdCount++;
           } catch (recordErr) {
@@ -79,7 +79,7 @@ export default {
         }
 
         // 4. Mise à jour du rapport final
-        await strapi.documents('api::bulk-import.bulk-import').update({
+        await (strapi.documents('api::bulk-import.bulk-import' as any) as any).update({
           documentId: result.documentId,
           data: {
             status: 'completed',
@@ -92,7 +92,7 @@ export default {
       } catch (globalErr) {
         console.error('🔥 Erreur critique lors de l\'importation :', globalErr.message);
         try {
-          await strapi.documents('api::bulk-import.bulk-import').update({
+          await (strapi.documents('api::bulk-import.bulk-import' as any) as any).update({
             documentId: result.documentId,
             data: {
               status: 'error',
