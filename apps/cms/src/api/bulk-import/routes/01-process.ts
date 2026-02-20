@@ -3,9 +3,9 @@ module.exports = {
     {
       method: 'POST',
       path: '/bulk-import/process',
-      handler: 'process.process',
+      handler: 'api::bulk-import.bulk-import.process',
       config: {
-        auth: false, // On sécurise via un token interne si besoin, ou on laisse ouvert pour le test (c'est interne au serveur)
+        auth: false,
         policies: [],
       },
     },
