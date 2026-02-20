@@ -22,8 +22,13 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "completed", "error"],
-      "default": "pending"
+      "enum": [
+        "pending",
+        "completed",
+        "error"
+      ],
+      "default": "pending",
+      "required": false
     },
     "report": {
       "type": "text"
