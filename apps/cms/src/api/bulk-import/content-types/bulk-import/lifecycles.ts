@@ -45,7 +45,16 @@ export default {
 
         for (const record of records) {
           try {
-            const linkedinUrl = record.linkedinUrl || record.url || record.Linkedin || record.LinkedIn || record.URL;
+            // 1. Chercher par nom de colonne
+            let linkedinUrl = record.linkedinUrl || record.url || record.Linkedin || record.LinkedIn || record.URL;
+            
+            // 2. Si non trouvé, prendre la première valeur de la ligne (fallback pour CSV sans header)
+            if (!linkedinUrl) {
+              const firstKey = Object.keys(record)[0];
+              if (firstKey && record[firstKey]?.startsWith('http')) {
+                linkedinUrl = record[firstKey];
+              }
+            }
             
             if (!linkedinUrl) {
               errorCount++;
