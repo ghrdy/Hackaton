@@ -18,8 +18,7 @@
     "csvFile": {
       "type": "media",
       "multiple": false,
-      "required": true,
-      "allowedTypes": ["files"]
+      "required": true
     },
     "status": {
       "type": "enumeration",

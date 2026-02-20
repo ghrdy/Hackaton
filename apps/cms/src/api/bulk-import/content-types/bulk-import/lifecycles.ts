@@ -1,57 +1,66 @@
-// @ts-nocheck
+import { errors } from '@strapi/utils';
 const axios = require('axios');
 const { parse } = require('csv-parse/sync');
 
-module.exports = {
+export default {
   async afterCreate(event) {
     const { result } = event;
 
-    // Run processing in background to avoid HTTP timeout
+    // Lancement asynchrone pour ne pas bloquer l'UI et éviter les timeouts
     (async () => {
-      // 1. Get the file details
-      const entry = await strapi.documents('api::bulk-import.bulk-import').findOne({
-        documentId: result.documentId,
-        populate: ['csvFile']
-      });
-
-      if (!entry.csvFile || entry.status !== 'pending') return;
-
       try {
-        console.log('🏁 Starting Background Bulk Import...');
-        
-        // 2. Download CSV content
+        console.log('🏁 Début de l\'importation en arrière-plan...');
+
+        // 1. Récupérer l'entrée complète avec le fichier
+        const entry = await strapi.documents('api::bulk-import.bulk-import').findOne({
+          documentId: result.documentId,
+          populate: ['csvFile']
+        });
+
+        if (!entry || !entry.csvFile) {
+          console.error('❌ Aucun fichier trouvé pour l\'importation');
+          return;
+        }
+
+        // 2. Télécharger le contenu du CSV
         const fileUrl = entry.csvFile.url.startsWith('http') 
           ? entry.csvFile.url 
           : `${strapi.config.get('server.url')}${entry.csvFile.url}`;
         
+        console.log(`📥 Téléchargement du fichier : ${fileUrl}`);
         const response = await axios.get(fileUrl);
         const csvContent = response.data;
 
-        // 3. Parse CSV
+        // 3. Parser le CSV
         const records = parse(csvContent, {
           columns: true,
           skip_empty_lines: true,
           trim: true
         });
 
-        console.log(`📦 Found ${records.length} records to process.`);
+        console.log(`📦 ${records.length} lignes détectées.`);
 
         let createdCount = 0;
-        let skippedCount = 0;
+        let errorCount = 0;
 
         for (const record of records) {
-          const linkedinUrl = record.linkedinUrl || record.url;
-          if (!linkedinUrl) {
-            skippedCount++;
-            continue;
-          }
-
-          const firstName = record.firstName || 'New';
-          const lastName = record.lastName || 'Alumnus';
-          const slug = `${firstName}-${lastName}-${Math.random().toString(36).substring(7)}`
-            .toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
           try {
+            const linkedinUrl = record.linkedinUrl || record.url || record.Linkedin || record.LinkedIn;
+            
+            if (!linkedinUrl) {
+              errorCount++;
+              continue;
+            }
+
+            const firstName = record.firstName || record.prenom || record.Prenom || 'Nouveau';
+            const lastName = record.lastName || record.nom || record.Nom || 'Alumni';
+            
+            // Génération d'un slug unique
+            const slug = `${firstName}-${lastName}-${Math.random().toString(36).substring(7)}`
+              .toLowerCase()
+              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, '-');
+
             await strapi.documents('api::alumnus.alumnus').create({
               data: {
                 firstName,
@@ -59,32 +68,40 @@ module.exports = {
                 linkedinUrl,
                 status: 'pending',
                 slug
-              }
+              },
+              status: 'published' // On le publie direct pour qu'il soit visible par le scraper
             });
             createdCount++;
-          } catch (e) {
-            console.error(`⚠️ Failed to create record: ${e.message}`);
-            skippedCount++;
+          } catch (recordErr) {
+            console.error('⚠️ Erreur sur une ligne :', recordErr.message);
+            errorCount++;
           }
         }
 
-        // 4. Update Import Status
+        // 4. Mise à jour du rapport final
         await strapi.documents('api::bulk-import.bulk-import').update({
           documentId: result.documentId,
           data: {
             status: 'completed',
-            report: `Success: Created ${createdCount} alumni. Skipped/Failed: ${skippedCount}.`
+            report: `Succès : ${createdCount} alumni créés. Échecs : ${errorCount}.`
           }
         });
 
-        console.log('✅ Background Bulk Import Finished!');
+        console.log('✅ Importation terminée avec succès !');
 
-      } catch (err) {
-        console.error('❌ Bulk Import Error:', err.message);
-        await strapi.documents('api::bulk-import.bulk-import').update({
-          documentId: result.documentId,
-          data: { status: 'error', report: `Error: ${err.message}` }
-        });
+      } catch (globalErr) {
+        console.error('🔥 Erreur critique lors de l\'importation :', globalErr.message);
+        try {
+          await strapi.documents('api::bulk-import.bulk-import').update({
+            documentId: result.documentId,
+            data: {
+              status: 'error',
+              report: `Erreur critique : ${globalErr.message}`
+            }
+          });
+        } catch (updateErr) {
+          console.error('Impossible de mettre à jour le statut d\'erreur');
+        }
       }
     })();
   }
