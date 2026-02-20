@@ -70,7 +70,7 @@ export default async function AlumnusProfile({ params }: { params: Promise<{ slu
                   <div className="relative h-40 w-40 overflow-hidden rounded-full border-4 border-white bg-neutral-50 shadow-lg">
                     {person.photo ? (
                       <Image
-                        src={`${STRAPI_URL}${person.photo.url}`}
+                        src={person.photo.url.startsWith("http") ? person.photo.url : `${STRAPI_URL}${person.photo.url}`}
                         alt={person.lastName}
                         fill
                         className="object-cover"

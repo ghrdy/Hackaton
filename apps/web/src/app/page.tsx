@@ -199,7 +199,7 @@ export default async function Home({
                   <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border-2 border-slate-100 bg-slate-50 shadow-inner group-hover:border-[#00AFEF]/50 transition-colors">
                     {person.photo ? (
                       <Image
-                        src={`${STRAPI_URL}${person.photo.url}`}
+                        src={person.photo.url.startsWith("http") ? person.photo.url : `${STRAPI_URL}${person.photo.url}`}
                         alt={`${person.firstName} ${person.lastName}`}
                         fill
                         className="object-cover"
