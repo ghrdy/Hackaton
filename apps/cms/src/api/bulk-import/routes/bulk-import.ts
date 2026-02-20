@@ -1,2 +1,3 @@
 import { factories } from '@strapi/strapi';
-export default factories.createCoreRouter('api::bulk-import.bulk-import');
+
+export default factories.createCoreRouter('api::bulk-import.bulk-import' as any);
