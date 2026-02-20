@@ -5,108 +5,107 @@ const { parse } = require('csv-parse/sync');
 export default {
   async afterCreate(event) {
     const { result } = event;
+    const documentId = result.documentId;
 
-    // Utilisation de setTimeout pour sortir complètement du contexte de la transaction de création
-    setTimeout(async () => {
+    // On sort complètement du flux Strapi pour éviter les conflits de transaction
+    setImmediate(async () => {
       try {
-        console.log('🏁 Début de l\'importation en arrière-plan...');
+        console.log(`🏁 [Background] Début de l'import pour le document : ${documentId}`);
 
-        // 1. Récupérer l'entrée complète avec le fichier
-        const entry = await (strapi.documents('api::bulk-import.bulk-import' as any) as any).findOne({
-          documentId: result.documentId,
-          populate: ['csvFile']
+        // 1. Récupérer l'entrée via DB Query (plus stable en background)
+        const entry = await strapi.db.query('api::bulk-import.bulk-import').findOne({
+          where: { documentId: documentId },
+          populate: { csvFile: true }
         });
 
         if (!entry || !entry.csvFile) {
-          console.error('❌ Aucun fichier trouvé ou entrée introuvable');
+          console.error('❌ Fichier introuvable ou entrée déjà supprimée');
           return;
         }
 
-        // 2. Télécharger le contenu du CSV
+        // 2. Téléchargement du CSV
         const fileUrl = entry.csvFile.url.startsWith('http') 
           ? entry.csvFile.url 
           : `${strapi.config.get('server.url')}${entry.csvFile.url}`;
         
-        console.log(`📥 Téléchargement du fichier : ${fileUrl}`);
+        console.log(`📥 Téléchargement : ${fileUrl}`);
         const response = await axios.get(fileUrl);
         const csvContent = response.data;
 
-        // 3. Parser le CSV
+        // 3. Parsing
         const records = parse(csvContent, {
           columns: true,
           skip_empty_lines: true,
           trim: true
         });
 
-        console.log(`📦 ${records.length} lignes détectées.`);
+        console.log(`📦 ${records.length} lignes à traiter.`);
 
         let createdCount = 0;
         let errorCount = 0;
 
         for (const record of records) {
           try {
-            // Mapping très souple pour les colonnes
-            let linkedinUrl = record.linkedinUrl || record.url || record.Linkedin || record.LinkedIn || record.URL || record.link || record.Link;
+            // Mapping de l'URL LinkedIn (très agressif)
+            let linkedinUrl = record.linkedinUrl || record.url || record.LinkedIn || record.URL || record.link || record.Link;
             
-            // Fallback première colonne
+            // Si toujours rien, on cherche n'importe quelle valeur qui ressemble à un lien LinkedIn
             if (!linkedinUrl) {
-              const firstKey = Object.keys(record)[0];
-              if (firstKey && record[firstKey]?.startsWith('http')) linkedinUrl = record[firstKey];
+              const values = Object.values(record);
+              linkedinUrl = values.find(v => typeof v === 'string' && v.includes('linkedin.com/in/'));
             }
-            
+
             if (!linkedinUrl) {
               errorCount++;
               continue;
             }
 
-            const firstName = record.firstName || record.prenom || record.Prenom || record.first_name || 'Nouveau';
-            const lastName = record.lastName || record.nom || record.Nom || record.last_name || 'Alumni';
+            const firstName = record.firstName || record.prenom || record.first_name || 'Nouveau';
+            const lastName = record.lastName || record.nom || record.last_name || 'Alumni';
             const slug = `${firstName}-${lastName}-${Math.random().toString(36).substring(7)}`
               .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, '-');
 
-            await (strapi.documents('api::alumnus.alumnus' as any) as any).create({
+            // Création via DB Query pour éviter les conflits
+            await strapi.db.query('api::alumnus.alumnus').create({
               data: {
                 firstName,
                 lastName,
                 linkedinUrl,
                 scrapingStatus: 'pending',
-                slug
-              },
-              status: 'published'
+                slug,
+                publishedAt: new Date() // Force la publication en DB
+              }
             });
             createdCount++;
-          } catch (recordErr) {
-            console.error('⚠️ Erreur sur une ligne :', recordErr.message);
+          } catch (rowErr) {
+            console.error('⚠️ Erreur ligne :', rowErr.message);
             errorCount++;
           }
         }
 
-        // 4. Mise à jour du rapport final
-        await (strapi.documents('api::bulk-import.bulk-import' as any) as any).update({
-          documentId: result.documentId,
+        // 4. Update final du statut
+        await strapi.db.query('api::bulk-import.bulk-import').update({
+          where: { documentId: documentId },
           data: {
             importStatus: 'completed',
-            report: `Succès : ${createdCount} alumni créés. Échecs : ${errorCount}.`
+            report: `Terminé. ${createdCount} créés, ${errorCount} erreurs.`
           }
         });
 
-        console.log('✅ Importation terminée avec succès !');
+        console.log('✅ Importation terminée en arrière-plan !');
 
-      } catch (globalErr) {
-        console.error('🔥 Erreur critique lors de l\'importation :', globalErr.message);
+      } catch (err) {
+        console.error('🔥 Erreur fatale importation :', err.message);
         try {
-          // Utilisation du service directement pour éviter les conflits de documents si possible
           await strapi.db.query('api::bulk-import.bulk-import').update({
-            where: { documentId: result.documentId },
+            where: { documentId: documentId },
             data: {
               importStatus: 'error',
-              report: `Erreur critique : ${globalErr.message}`
+              report: `Erreur : ${err.message}`
             }
           });
-        } catch (updateErr) {
-          console.error('Impossible de mettre à jour le statut d\'erreur');
-        }
+        } catch (e) {}
       }
-    }, 1000); // Délai de 1 seconde pour être sûr que Strapi a fini sa transaction
+    });
   }
 };
