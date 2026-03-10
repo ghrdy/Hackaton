@@ -9,7 +9,10 @@
     "dev:cms": "npm run develop --workspace=apps/cms"
   },
   "dependencies": {
-    "tailwindcss": "4.2.0",
-    "@tailwindcss/postcss": "4.2.0"
+    "@tailwindcss/postcss": "4.2.0",
+    "tailwindcss": "4.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.3"
   }
 }
