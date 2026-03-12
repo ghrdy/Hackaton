@@ -367,8 +367,8 @@ async function updateAlumnusStatus(documentId, status, data = {}) {
     
     for (const profile of results) {
       // Find the original record by URL
-      const original = pendingAlumni.find(a => 
-        a.linkedinUrl.includes(profile.linkedin_id) || a.linkedinUrl.includes(profile.id)
+      const original = pendingAlumni.find(a =>
+        a.linkedinUrl && (a.linkedinUrl.includes(profile.linkedin_id) || a.linkedinUrl.includes(profile.url || profile.id))
       );
 
       // (Logic de mapping photo/data identique à avant...)
