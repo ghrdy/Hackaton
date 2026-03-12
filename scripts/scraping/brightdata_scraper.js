@@ -381,7 +381,7 @@ async function updateAlumnusStatus(documentId, status, data = {}) {
         const lastName = profile.last_name || (profile.name ? profile.name.split(' ').slice(1).join(' ') : null);
 
         const updateData = {
-          scrapingStatus: 'done',
+          scrapingStatus: 'scraped',
           ...(firstName && { firstName }),
           ...(lastName && { lastName }),
           ...(profile.headline && { jobTitle: profile.headline }),
@@ -398,7 +398,7 @@ async function updateAlumnusStatus(documentId, status, data = {}) {
           if (photoId) updateData.photo = photoId;
         }
 
-        await updateAlumnusStatus(original.documentId, 'done', updateData);
+        await updateAlumnusStatus(original.documentId, 'scraped', updateData);
         console.log(`✅ [UPDATED] ${firstName || ''} ${lastName || ''} (${original.documentId})`);
       } catch (err) {
         const detail = err.response?.data?.error?.message || err.response?.data || err.message;
@@ -410,8 +410,48 @@ async function updateAlumnusStatus(documentId, status, data = {}) {
     }
 
     await updateLastRun();
+    await cleanupCompletedBulkImports();
 
   } catch (error) {
     console.error("🔥 Fatal Error:", error.message);
   }
 })();
+
+// --- Helper: Delete completed bulk imports if no alumni are still pending ---
+async function cleanupCompletedBulkImports() {
+  try {
+    // Check if any alumni are still pending or processing
+    const pendingCheck = await axios.get(
+      `${STRAPI_URL}/alumni?filters[scrapingStatus][$in][0]=pending&filters[scrapingStatus][$in][1]=processing&pagination[pageSize]=1`,
+      { headers: { Authorization: `Bearer ${STRAPI_TOKEN}` } }
+    );
+
+    if (pendingCheck.data.meta?.pagination?.total > 0) {
+      console.log("⏳ Some alumni still pending — skipping bulk import cleanup.");
+      return;
+    }
+
+    // Fetch completed bulk imports
+    const bulkRes = await axios.get(
+      `${STRAPI_URL}/bulk-imports?filters[importStatus][$eq]=completed`,
+      { headers: { Authorization: `Bearer ${STRAPI_TOKEN}` } }
+    );
+
+    const bulkImports = bulkRes.data.data || [];
+    if (bulkImports.length === 0) {
+      console.log("✅ No completed bulk imports to clean up.");
+      return;
+    }
+
+    for (const bi of bulkImports) {
+      await axios.delete(`${STRAPI_URL}/bulk-imports/${bi.documentId}`, {
+        headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
+      });
+      console.log(`🗑️ Deleted bulk import: ${bi.name} (${bi.documentId})`);
+    }
+
+    console.log(`🧹 Cleanup done: ${bulkImports.length} bulk import(s) deleted.`);
+  } catch (error) {
+    console.error("⚠️ Failed to cleanup bulk imports:", error.response?.data?.error?.message || error.message);
+  }
+}
