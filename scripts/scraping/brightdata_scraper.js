@@ -318,15 +318,11 @@ async function getPendingAlumni() {
 
 // --- Helper: Update Alumnus Status ---
 async function updateAlumnusStatus(documentId, status, data = {}) {
-  try {
-    await axios.put(`${STRAPI_URL}/alumni/${documentId}`, {
-      data: { scrapingStatus: status, ...data }
-    }, {
-      headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
-    });
-  } catch (error) {
-    console.error(`⚠️ Failed to update status for ${documentId}:`, error.message);
-  }
+  await axios.put(`${STRAPI_URL}/alumni/${documentId}`, {
+    data: { scrapingStatus: status, ...data }
+  }, {
+    headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
+  });
 }
 
 // --- Main Execution ---
@@ -356,7 +352,11 @@ async function updateAlumnusStatus(documentId, status, data = {}) {
 
     // Mark as processing
     for (const alum of pendingAlumni) {
-      await updateAlumnusStatus(alum.documentId, 'processing');
+      try {
+        await updateAlumnusStatus(alum.documentId, 'processing');
+      } catch (err) {
+        console.error(`⚠️ Failed to mark ${alum.documentId} as processing:`, err.response?.data?.error?.message || err.message);
+      }
     }
 
     const snapshotId = await triggerScraping(urls);
@@ -401,8 +401,11 @@ async function updateAlumnusStatus(documentId, status, data = {}) {
         await updateAlumnusStatus(original.documentId, 'done', updateData);
         console.log(`✅ [UPDATED] ${firstName || ''} ${lastName || ''} (${original.documentId})`);
       } catch (err) {
-        console.error(`❌ [ERROR] Failed to update ${original.documentId}:`, err.message);
-        await updateAlumnusStatus(original.documentId, 'error');
+        const detail = err.response?.data?.error?.message || err.response?.data || err.message;
+        console.error(`❌ [ERROR] Failed to update ${original.documentId}:`, detail);
+        try {
+          await updateAlumnusStatus(original.documentId, 'error');
+        } catch (_) {}
       }
     }
 
