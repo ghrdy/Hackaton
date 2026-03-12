@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: '*.media.strapiapp.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
