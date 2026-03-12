@@ -431,9 +431,9 @@ async function cleanupCompletedBulkImports() {
       return;
     }
 
-    // Fetch completed bulk imports
+    // Fetch completed bulk imports with their CSV file
     const bulkRes = await axios.get(
-      `${STRAPI_URL}/bulk-imports?filters[importStatus][$eq]=completed`,
+      `${STRAPI_URL}/bulk-imports?filters[importStatus][$eq]=completed&populate=csvFile`,
       { headers: { Authorization: `Bearer ${STRAPI_TOKEN}` } }
     );
 
@@ -444,6 +444,20 @@ async function cleanupCompletedBulkImports() {
     }
 
     for (const bi of bulkImports) {
+      // Delete the CSV media file first
+      const csvFileId = bi.csvFile?.id;
+      if (csvFileId) {
+        try {
+          await axios.delete(`${STRAPI_URL.replace('/api', '')}/api/upload/files/${csvFileId}`, {
+            headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
+          });
+          console.log(`🗑️ Deleted CSV file: ${bi.csvFile.name} (ID: ${csvFileId})`);
+        } catch (err) {
+          console.error(`⚠️ Failed to delete CSV file ${csvFileId}:`, err.response?.data?.error?.message || err.message);
+        }
+      }
+
+      // Delete the bulk import record
       await axios.delete(`${STRAPI_URL}/bulk-imports/${bi.documentId}`, {
         headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
       });
