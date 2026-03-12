@@ -371,9 +371,39 @@ async function updateAlumnusStatus(documentId, status, data = {}) {
         a.linkedinUrl && (a.linkedinUrl.includes(profile.linkedin_id) || a.linkedinUrl.includes(profile.url || profile.id))
       );
 
-      // (Logic de mapping photo/data identique à avant...)
-      // Je simplifie ici pour la lisibilité, on réutilise processAndUpload 
-      // mais en faisant des PUT au lieu de POST.
+      if (!original) {
+        console.log(`⚠️ No matching alumni found for profile: ${profile.url || profile.linkedin_id || profile.id}`);
+        continue;
+      }
+
+      try {
+        const firstName = profile.first_name || (profile.name ? profile.name.split(' ')[0] : null);
+        const lastName = profile.last_name || (profile.name ? profile.name.split(' ').slice(1).join(' ') : null);
+
+        const updateData = {
+          scrapingStatus: 'done',
+          ...(firstName && { firstName }),
+          ...(lastName && { lastName }),
+          ...(profile.headline && { jobTitle: profile.headline }),
+          ...(profile.city || profile.location ? { city: profile.city || profile.location } : {}),
+          ...((profile.current_company_name || profile.current_company?.name) && {
+            company: profile.current_company_name || profile.current_company?.name
+          }),
+        };
+
+        // Upload photo if available
+        const photoUrl = profile.avatar || profile.profile_image_url || profile.image;
+        if (photoUrl) {
+          const photoId = await uploadImageToStrapi(photoUrl, lastName || original.documentId);
+          if (photoId) updateData.photo = photoId;
+        }
+
+        await updateAlumnusStatus(original.documentId, 'done', updateData);
+        console.log(`✅ [UPDATED] ${firstName || ''} ${lastName || ''} (${original.documentId})`);
+      } catch (err) {
+        console.error(`❌ [ERROR] Failed to update ${original.documentId}:`, err.message);
+        await updateAlumnusStatus(original.documentId, 'error');
+      }
     }
 
     await updateLastRun();
